@@ -4,7 +4,7 @@ import grails.plugin.springsecurity.annotation.Secured
 import grails.validation.ValidationException
 import static org.springframework.http.HttpStatus.*
 
-@Secured('ROLE_ADMIN')
+@Secured(['ROLE_USER','ROLE_ADMIN'])
 class UserController {
 
     UserService userService
@@ -57,7 +57,20 @@ class UserController {
         }
 
         try {
+            // Récupérer le fichier dans les données
+            // Sauvegarder le fichier sur le disque
+            // Création d'une illustration sur le fichier sauvegardé
+            // Ajout de l'illustration à l'utilisateur
+            def fileData = request.getFile("file")
+
             userService.save(user)
+
+            // Gestion de l'attribution de role
+            def roleInstance = Role.get(params.role)
+            def userRoles = user.getAuthorities()
+            if ( !userRoles.contains(roleInstance))
+                UserRole.create(user, roleInstance, true)
+
         } catch (ValidationException e) {
             respond user.errors, view:'edit'
             return
